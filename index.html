@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lokesh · Flutter & Full Stack Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05060c;--bg2:#0a0c15;--card:#0d1020;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#eef0f8;--muted:#616880;--accent:#4f8eff;--accent2:#00e5c0;--accent3:#ff6b6b;--purple:#a78bfa;
+  --glow:rgba(79,142,255,0.18);--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:16px;line-height:1.7;overflow-x:hidden;cursor:none}
+
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+#cur{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .2s,height .2s,background .2s}
+#cur-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(79,142,255,0.6);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s}
+
+#loader{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;transition:opacity .8s,visibility .8s}
+#loader.hide{opacity:0;visibility:hidden}
+.loader-label{font-family:var(--font-h);font-size:1.4rem;font-weight:700;letter-spacing:.15em;color:var(--muted)}
+.loader-bar-wrap{width:200px;height:2px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden}
+.loader-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:1.2rem 4rem;display:flex;align-items:center;justify-content:space-between;background:rgba(5,6,12,0.6);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s}
+nav.scrolled{padding:.85rem 4rem;background:rgba(5,6,12,0.9)}
+.nav-logo{font-family:var(--font-h);font-weight:800;font-size:1.25rem;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;cursor:pointer}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-size:.78rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.06em;text-transform:uppercase;position:relative;padding-bottom:3px;transition:color .2s}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--accent2);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+
+section{position:relative;z-index:1}
+
+.hero{min-height:100vh;display:flex;align-items:center;padding:7rem 4rem 4rem;overflow:hidden;position:relative}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(79,142,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,255,.035) 1px,transparent 1px);background-size:80px 80px;animation:grid-drift 25s linear infinite}
+@keyframes grid-drift{from{background-position:0 0}to{background-position:80px 80px}}
+
+.orb{position:absolute;border-radius:50%;pointer-events:none}
+.orb1{width:650px;height:650px;background:radial-gradient(circle,rgba(79,142,255,.1),transparent 70%);top:-220px;right:-220px;animation:orb-float 9s ease-in-out infinite}
+.orb2{width:450px;height:450px;background:radial-gradient(circle,rgba(0,229,192,.07),transparent 70%);bottom:-100px;left:8%;animation:orb-float 11s ease-in-out infinite;animation-delay:-4s}
+.orb3{width:350px;height:350px;background:radial-gradient(circle,rgba(167,139,250,.07),transparent 70%);top:38%;right:18%;animation:orb-float 13s ease-in-out infinite;animation-delay:-7s}
+@keyframes orb-float{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-35px) scale(1.04)}70%{transform:translateY(18px) scale(.97)}}
+
+.hero-content{max-width:1000px;position:relative;z-index:2}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border:1px solid var(--border2);border-radius:100px;font-size:.76rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2.5rem;background:rgba(255,255,255,0.025);opacity:0;transform:translateY(20px);animation:fu .8s .2s ease forwards}
+.blink-dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 10px var(--accent2);animation:blink 2s infinite}
+@keyframes blink{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.65);opacity:.4}}
+
+.hero-name{font-family:var(--font-h);font-size:clamp(3rem,8.5vw,7.5rem);font-weight:800;line-height:.92;letter-spacing:-.04em;margin-bottom:1.75rem;opacity:0;animation:fu .9s .4s ease forwards}
+.line1{display:block;color:#fff}
+.line2{display:block;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:300% 300%;animation:grad 5s ease infinite}
+@keyframes grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.line3{display:block;color:rgba(255,255,255,.3)}
+
+.hero-desc{font-size:1.1rem;color:var(--muted);max-width:500px;margin-bottom:3rem;font-weight:300;line-height:1.9;opacity:0;animation:fu .9s .6s ease forwards}
+.hero-desc strong{color:var(--text);font-weight:500}
+
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;opacity:0;animation:fu .9s .8s ease forwards}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:14px 30px;border-radius:12px;font-family:var(--font-b);font-size:.9rem;font-weight:500;text-decoration:none;transition:all .3s;cursor:none;border:none;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);transform:translateX(-100%);transition:transform .4s}
+.btn:hover::after{transform:translateX(0)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(79,142,255,.45)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text);transform:translateY(-3px)}
+
+.hero-stats{display:flex;gap:4rem;margin-top:5rem;padding-top:3rem;border-top:1px solid var(--border);opacity:0;animation:fu .9s 1s ease forwards}
+.sn{font-family:var(--font-h);font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#fff,rgba(255,255,255,.4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sl{font-size:.72rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
+
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fu .8s 1.4s ease forwards}
+.sh-txt{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sh-line{width:1px;height:48px;background:linear-gradient(to bottom,transparent,var(--accent));animation:sh-pulse 2s ease-in-out infinite}
+@keyframes sh-pulse{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.25)}}
+
+@keyframes fu{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+.sec{padding:7rem 4rem}
+.sec-label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.8rem;display:flex;align-items:center;gap:8px}
+.sec-label::before{content:'';width:22px;height:1px;background:var(--accent)}
+.sec-title{font-family:var(--font-h);font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin-bottom:1rem}
+
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .75s cubic-bezier(.25,.46,.45,.94),transform .75s cubic-bezier(.25,.46,.45,.94)}
+.reveal.on{opacity:1;transform:translateY(0)}
+.reveal-l{opacity:0;transform:translateX(-50px);transition:opacity .7s .1s,transform .7s .1s}
+.reveal-l.on{opacity:1;transform:translateX(0)}
+.reveal-r{opacity:0;transform:translateX(50px);transition:opacity .7s .15s,transform .7s .15s}
+.reveal-r.on{opacity:1;transform:translateX(0)}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center}
+.about-body{color:var(--muted);line-height:1.9;font-weight:300}
+.about-body p+p{margin-top:1rem}
+.about-body strong{color:var(--text);font-weight:500}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.5rem}
+.pill{padding:6px 14px;border:1px solid var(--border2);border-radius:100px;font-size:.74rem;color:var(--muted);background:rgba(255,255,255,.02);letter-spacing:.04em;transition:all .25s;cursor:default}
+.pill:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(0,229,192,.05);transform:translateY(-2px)}
+.exp-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden}
+.exp-card::before{content:'';position:absolute;top:0;left:-100%;right:-100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);animation:slide-shine 3s ease-in-out infinite}
+@keyframes slide-shine{0%{left:-100%}100%{left:100%}}
+.exp-item{display:flex;gap:1rem;padding:1.2rem 0;border-bottom:1px solid var(--border)}
+.exp-item:last-child{border-bottom:none;padding-bottom:0}
+.edot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.edot.b{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.edot.g{background:var(--accent2);box-shadow:0 0 12px var(--accent2)}
+.edot.r{background:var(--accent3);box-shadow:0 0 12px var(--accent3)}
+.erole{font-weight:600;font-size:.92rem;margin-bottom:2px}
+.eco{font-size:.79rem;color:var(--accent);margin-bottom:2px}
+.edt{font-size:.74rem;color:var(--muted)}
+
+/* WHAT I DO */
+.wid-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:3.5rem}
+.wid-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem 1.75rem;position:relative;overflow:hidden;transition:all .4s cubic-bezier(.25,.46,.45,.94)}
+.wid-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.25,.46,.45,.94)}
+.wid-card:hover{transform:translateY(-7px);border-color:var(--border2);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.wid-card:hover::after{transform:scaleX(1)}
+.wc1::after{background:linear-gradient(90deg,var(--accent),transparent)}
+.wc2::after{background:linear-gradient(90deg,var(--accent2),transparent)}
+.wc3::after{background:linear-gradient(90deg,var(--purple),transparent)}
+.wc4::after{background:linear-gradient(90deg,var(--accent3),transparent)}
+.wid-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1.25rem;transition:transform .35s}
+.wid-card:hover .wid-icon{transform:scale(1.12) rotate(-6deg)}
+.wid-title{font-family:var(--font-h);font-size:1.05rem;font-weight:700;margin-bottom:.7rem;letter-spacing:-.01em}
+.wid-desc{font-size:.84rem;color:var(--muted);line-height:1.75}
+
+/* TIMELINE */
+.tl{margin-top:4rem;position:relative;padding-left:2.25rem}
+.tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--border2) 15%,var(--border2) 85%,transparent)}
+.tl-item{padding-bottom:4rem;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{position:absolute;left:-2.7rem;top:5px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(79,142,255,.15);animation:dot-aura 2.5s ease-in-out infinite}
+@keyframes dot-aura{0%,100%{box-shadow:0 0 0 4px rgba(79,142,255,.15),0 0 16px rgba(79,142,255,.4)}50%{box-shadow:0 0 0 8px rgba(79,142,255,.08),0 0 30px rgba(79,142,255,.6)}}
+.tl-role{font-family:var(--font-h);font-size:1.2rem;font-weight:700;letter-spacing:-.01em}
+.tl-meta{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;flex-wrap:wrap}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.badge-b{background:rgba(79,142,255,.12);color:var(--accent)}
+.badge-g{background:rgba(0,229,192,.1);color:var(--accent2)}
+.tl-co{font-size:.84rem;color:var(--muted);margin-bottom:1rem}
+.tl-co em{color:var(--accent);font-style:normal}
+.tl-pts{list-style:none}
+.tl-pts li{padding:.3rem 0;color:var(--muted);font-size:.87rem;display:flex;gap:10px;line-height:1.65}
+.tl-pts li::before{content:'→';color:var(--accent);flex-shrink:0}
+
+/* PLUTO */
+.pluto-hdr{display:flex;align-items:flex-start;gap:2rem;margin-bottom:4rem;flex-wrap:wrap}
+.pluto-logo-wrap{position:relative;flex-shrink:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center}
+.pluto-ring{position:absolute;inset:-10px;border-radius:32px;border:1px dashed rgba(167,139,250,.25);animation:ring-spin 12s linear infinite}
+@keyframes ring-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.pluto-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(79,142,255,.1));border:1px solid rgba(167,139,250,.25);display:flex;align-items:center;justify-content:center;font-size:2.2rem;animation:icon-bob 4s ease-in-out infinite}
+@keyframes icon-bob{0%,100%{transform:rotate(0deg)}25%{transform:rotate(8deg)}75%{transform:rotate(-8deg)}}
+.pluto-name{font-family:var(--font-h);font-size:2.6rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--purple),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.pluto-tag{display:inline-flex;align-items:center;gap:7px;padding:4px 13px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:100px;font-size:.7rem;color:var(--purple);letter-spacing:.07em;text-transform:uppercase;font-weight:600;margin-top:.6rem;width:fit-content}
+.pluto-desc{color:var(--muted);font-size:.9rem;max-width:540px;line-height:1.8;margin-top:.5rem}
+
+/* PROJECTS */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.5rem;margin-top:2rem}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden;transition:all .4s cubic-bezier(.25,.46,.45,.94);cursor:default}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transform-origin:left;transition:transform .45s}
+.pcard:hover{transform:translateY(-7px);border-color:rgba(79,142,255,.18);box-shadow:0 28px 70px rgba(0,0,0,.65)}
+.pcard:hover::before{transform:scaleX(1)}
+.pcard.featured{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start}
+.pcard.dimmed{opacity:.62}
+.pcard.dimmed:hover{opacity:1}
+.feat-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(0,229,192,.07);border:1px solid rgba(0,229,192,.2);border-radius:100px;font-size:.7rem;color:var(--accent2);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:1rem}
+.client-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:100px;font-size:.7rem;color:#fbbf24;letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:1rem}
+.under-badge{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;background:rgba(251,146,60,.07);border:1px solid rgba(251,146,60,.22);border-radius:100px;font-size:.7rem;color:#fb923c;letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:1rem}
+.under-badge .ubdot{width:5px;height:5px;border-radius:50%;background:#fb923c;animation:blink 1.5s infinite}
+.picon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.25rem;transition:transform .35s}
+.pcard:hover .picon{transform:scale(1.12) rotate(-6deg)}
+.pname{font-family:var(--font-h);font-size:1.25rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.7rem}
+.pdesc{font-size:.85rem;color:var(--muted);line-height:1.75;margin-bottom:1.25rem}
+.techs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.5rem}
+.tech{padding:4px 10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;font-size:.69rem;color:var(--muted);letter-spacing:.03em;font-family:monospace;transition:all .2s}
+.tech:hover{border-color:var(--accent2);color:var(--accent2)}
+.plink{display:inline-flex;align-items:center;gap:6px;font-size:.81rem;color:var(--accent);text-decoration:none;font-weight:500;transition:gap .2s,color .2s}
+.plink:hover{gap:12px;color:var(--accent2)}
+
+.div-line{margin:4rem 0 2rem;display:flex;align-items:center;gap:1.5rem}
+.div-line .dl{flex:1;height:1px;background:var(--border)}
+.div-line span{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* SKILLS */
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:3.5rem}
+.skc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;transition:all .3s}
+.skc:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.sk-title{font-family:var(--font-h);font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.sk-list{display:flex;flex-wrap:wrap;gap:7px}
+.sk{padding:5px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:7px;font-size:.76rem;color:var(--text);transition:all .22s;cursor:default}
+.sk:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,255,.06);transform:translateY(-2px)}
+
+/* CONTACT */
+.contact-sec{padding:8rem 4rem;text-align:center;position:relative;overflow:hidden}
+.contact-sec::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,255,.055),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:orb-float 12s ease-in-out infinite}
+.contact-big{font-family:var(--font-h);font-size:clamp(2.5rem,5vw,4.5rem);font-weight:800;letter-spacing:-.035em;margin-bottom:1.5rem;line-height:1.05}
+.contact-big span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.contact-sub{font-size:1rem;color:var(--muted);max-width:430px;margin:0 auto 3rem;font-weight:300}
+.c-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.c-link{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border:1px solid var(--border2);border-radius:12px;font-size:.85rem;color:var(--text);text-decoration:none;background:rgba(255,255,255,.025);transition:all .3s;cursor:none}
+.c-link:hover{border-color:var(--accent);background:rgba(79,142,255,.08);transform:translateY(-4px);box-shadow:0 14px 36px rgba(79,142,255,.18)}
+.c-link svg{width:16px;height:16px;fill:currentColor;flex-shrink:0}
+
+footer{padding:2rem 4rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--muted);position:relative;z-index:1}
+
+/* GLOW FOLLOW EFFECT */
+.pcard .gfx{position:absolute;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,255,.07),transparent 70%);pointer-events:none;opacity:0;transition:opacity .3s;transform:translate(-50%,-50%);z-index:0}
+.pcard:hover .gfx{opacity:1}
+.pcard>*{position:relative;z-index:1}
+
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .hero,.sec,.contact-sec{padding-left:1.5rem;padding-right:1.5rem}
+  .about-grid,.pcard.featured{grid-template-columns:1fr;gap:3rem}
+  footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ACTIVE NAV LINK */
+.nav-links a.active{color:var(--text)}
+.nav-links a.active::after{width:100%}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-label" id="ltxt">LOKESH</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
+</div>
+
+<canvas id="bg-canvas"></canvas>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<nav id="nav">
+  <div class="nav-logo">Lokesh.</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#what-i-do">What I Do</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid-bg"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="blink-dot"></span>Available for opportunities</div>
+    <h1 class="hero-name">
+      <span class="line1" id="sname">Ls.Lokesh</span>
+      <span class="line2">Flutter &amp; Full Stack</span>
+      <span class="line3">Developer</span>
+    </h1>
+    <p class="hero-desc">Building <strong>cross-platform mobile apps</strong> and <strong>scalable web platforms</strong> with Flutter, Node.js &amp; AWS. Turning real-world ideas into live products under <strong>Pluto LLC</strong>.</p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">View my work ↓</a>
+      <a href="#contact" class="btn btn-ghost">Get in touch →</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="sn" id="c1">0</div><div class="sl">Live projects</div></div>
+      <div><div class="sn" id="c2">0</div><div class="sl">Companies</div></div>
+      <div><div class="sn" id="c3">0</div><div class="sl">Months exp</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="sh-txt">Scroll</div>
+    <div class="sh-line"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="sec" id="about">
+  <div class="about-grid">
+    <div class="reveal-l">
+      <div class="sec-label">About Me</div>
+      <h2 class="sec-title">Code. Build.<br/>Ship. Repeat.</h2>
+      <div class="about-body">
+        <p>I'm a 2nd-year B.Tech ECE student at KARE with a deep obsession for building real products. I specialize in <strong>Flutter mobile development</strong> and <strong>full-stack web apps</strong>.</p>
+        <p>I don't just write code — I've shipped apps to the Play Store, built client platforms on AWS, and founded <strong>WorkZo</strong>, a marketplace connecting students with freelance developers.</p>
+        <p>My dream is to grow <strong>Pluto LLC</strong> into a fully-fledged software company that ships SaaS products solving real-world problems at scale.</p>
+      </div>
+      <div class="pills">
+        <span class="pill">Flutter / Dart</span><span class="pill">Node.js</span><span class="pill">TypeScript</span>
+        <span class="pill">PostgreSQL</span><span class="pill">Firebase</span><span class="pill">AWS</span>
+        <span class="pill">React.js</span><span class="pill">Next.js</span><span class="pill">Prisma ORM</span>
+      </div>
+    </div>
+    <div class="reveal-r">
+      <div class="exp-card">
+        <div class="sec-label" style="margin-bottom:1.5rem">Timeline</div>
+        <div class="exp-item">
+          <div class="edot b"></div>
+          <div><div class="erole">Flutter Developer</div><div class="eco">Eric Web Solutions, Lucknow</div><div class="edt">Feb 2025 – Present · Remote</div></div>
+        </div>
+        <div class="exp-item">
+          <div class="edot g"></div>
+          <div><div class="erole">Application Developer Intern</div><div class="eco">CsTech Infosolutions, Bangalore</div><div class="edt">May 2025 – July 2025 · Onsite</div></div>
+        </div>
+        <div class="exp-item">
+          <div class="edot r"></div>
+          <div><div class="erole">B.Tech – ECE</div><div class="eco">Kalasalingam Academy (KARE)</div><div class="edt">2023 – 2027 · CGPA: 6.7</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT I DO -->
+<section class="sec" id="what-i-do">
+  <div class="sec-label reveal">What I Do</div>
+  <h2 class="sec-title reveal">Building Things That Matter</h2>
+  <div class="wid-grid">
+    <div class="wid-card wc1 reveal">
+      <div class="wid-icon" style="background:rgba(79,142,255,.1);border:1px solid rgba(79,142,255,.2)">📱</div>
+      <div class="wid-title">Cross-Platform Mobile Apps</div>
+      <p class="wid-desc">Production-ready Flutter apps for Android and iOS — from Play Store-published consumer apps to enterprise tools. Clean UI, fast performance, real deployments.</p>
+    </div>
+    <div class="wid-card wc2 reveal" style="transition-delay:.1s">
+      <div class="wid-icon" style="background:rgba(0,229,192,.08);border:1px solid rgba(0,229,192,.2)">☁️</div>
+      <div class="wid-title">Scalable Backends & APIs</div>
+      <p class="wid-desc">REST APIs with Node.js and TypeScript deployed on AWS. Authentication, payments, real-time notifications — full backend ownership from schema to production.</p>
+    </div>
+    <div class="wid-card wc3 reveal" style="transition-delay:.2s">
+      <div class="wid-icon" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)">🧩</div>
+      <div class="wid-title">Building SaaS Products</div>
+      <p class="wid-desc">Turning ideas into self-sustaining software businesses. Multi-tenant platforms, subscription flows, SaaS products end-to-end — from landing page to live users.</p>
+    </div>
+    <div class="wid-card wc4 reveal" style="transition-delay:.3s">
+      <div class="wid-icon" style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2)">🔍</div>
+      <div class="wid-title">Breaking Real-World Problems</div>
+      <p class="wid-desc">I identify friction in everyday systems — education, fitness, sustainability — and engineer practical solutions. Every project starts with a real problem worth solving.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="sec" id="experience">
+  <div class="sec-label reveal">Work History</div>
+  <h2 class="sec-title reveal">Experience</h2>
+  <div class="tl">
+    <div class="tl-item reveal">
+      <div class="tl-dot"></div>
+      <div class="tl-meta">
+        <div class="tl-role">Flutter Developer</div>
+        <span class="badge badge-b">Remote · Full-time</span>
+      </div>
+      <div class="tl-co"><em>Eric Web Solutions</em> · Lucknow, India · Feb 2025 – Present</div>
+      <ul class="tl-pts">
+        <li>Collaborating with the dev team to design, develop, test, and deploy Flutter apps per project requirements.</li>
+        <li>Managing app versioning, release builds, and publishing updates to Google Play Store &amp; Apple App Store.</li>
+        <li>Implementing performance improvements, bug fixes, and UI enhancements for seamless UX.</li>
+      </ul>
+    </div>
+    <div class="tl-item reveal" style="transition-delay:.15s">
+      <div class="tl-dot" style="background:var(--accent2);box-shadow:0 0 0 4px rgba(0,229,192,.15);animation-name:none"></div>
+      <div class="tl-meta">
+        <div class="tl-role">Application Developer Intern</div>
+        <span class="badge badge-g">Onsite · Internship</span>
+      </div>
+      <div class="tl-co"><em>CsTech Infosolutions</em> · Bangalore, India · May – July 2025</div>
+      <ul class="tl-pts">
+        <li>Built high-performance cross-platform mobile apps using Flutter/Dart for Android and iOS.</li>
+        <li>Developed and integrated REST APIs with backend support using Node.js and Firebase.</li>
+        <li>Hands-on experience in clean UI/UX design and full backend connectivity.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PLUTO LLC + PROJECTS -->
+<section class="sec" id="projects">
+  <div class="pluto-hdr reveal">
+    <div class="pluto-logo-wrap">
+      <div class="pluto-ring"></div>
+      <div class="pluto-icon">🪐</div>
+    </div>
+    <div>
+      <div class="sec-label">My Venture</div>
+      <div class="pluto-name">Pluto LLC</div>
+      <p class="pluto-desc">My dream startup — building software that solves real-world problems at scale. The home for every product I'm creating: SaaS tools, mobile platforms, and marketplaces people actually use.</p>
+      <div class="pluto-tag">⚡ Building in public · Est. 2025</div>
+    </div>
+  </div>
+
+  <div class="sec-label reveal" style="margin-bottom:.5rem">Products under Pluto LLC</div>
+  <h2 class="sec-title reveal">My Projects</h2>
+
+  <div class="proj-grid">
+    <!-- WORKZO -->
+    <div class="pcard featured reveal">
+      <div class="gfx"></div>
+      <div>
+        <div class="feat-badge">✦ Founder · Pluto LLC</div>
+        <div class="picon" style="background:rgba(0,229,192,.08);border:1px solid rgba(0,229,192,.2)">🚀</div>
+        <div class="pname">WorkZo</div>
+        <p class="pdesc">A mobile marketplace connecting college students who need final-year project help with verified freelance developers. Students post requirements, budgets &amp; deadlines. Developers browse, apply, and earn — a real economy built for campus.</p>
+        <div class="techs">
+          <span class="tech">Flutter</span><span class="tech">Node.js</span><span class="tech">TypeScript</span>
+          <span class="tech">Firebase</span><span class="tech">PostgreSQL</span><span class="tech">AWS RDS</span>
+          <span class="tech">Razorpay</span><span class="tech">Twilio OTP</span><span class="tech">OneSignal</span>
+        </div>
+        <a href="#" class="plink">View live app →</a>
+      </div>
+      <div>
+        <div class="sec-label" style="margin-bottom:1rem">Key Features</div>
+        <ul class="tl-pts">
+          <li>Students post project ideas, tech stack, budget &amp; deadline</li>
+          <li>Verified developers browse and apply to project requests</li>
+          <li>In-app wallet + Razorpay payment integration</li>
+          <li>OTP-based login via Twilio + Firebase Auth</li>
+          <li>Push notifications via OneSignal</li>
+          <li>AWS Elastic Beanstalk + RDS deployment</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- MOVESAVE -->
+    <div class="pcard dimmed reveal" style="transition-delay:.12s">
+      <div class="gfx"></div>
+      <div class="under-badge"><span class="ubdot"></span>Under Development</div>
+      <div class="picon" style="background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2)">🏃</div>
+      <div class="pname">MoveSave</div>
+      <p class="pdesc">Fitness &amp; sustainability tracking app converting walking, jogging &amp; cycling into health insights and real CO₂ savings. GPS-based activity recognition with environmental impact metrics.</p>
+      <div class="techs">
+        <span class="tech">Flutter</span><span class="tech">Node.js</span><span class="tech">PostgreSQL</span>
+        <span class="tech">Prisma ORM</span><span class="tech">Google Maps API</span><span class="tech">Health Connect</span><span class="tech">AWS</span>
+      </div>
+      <span style="font-size:.79rem;color:var(--muted);font-style:italic">🔧 Actively being built — launching soon</span>
+    </div>
+  </div>
+
+  <!-- CLIENT WORK -->
+  <div class="div-line reveal"><div class="dl"></div><span>Client Work</span><div class="dl"></div></div>
+  <div class="sec-label reveal" style="margin-bottom:.5rem">Delivered for Clients</div>
+  <h2 class="sec-title reveal" style="font-size:clamp(1.6rem,3vw,2.4rem)">Production Platforms</h2>
+  <div class="proj-grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+    <div class="pcard reveal">
+      <div class="gfx"></div>
+      <div class="client-badge">✦ Client Project</div>
+      <div class="picon" style="background:rgba(79,142,255,.08);border:1px solid rgba(79,142,255,.2)">📊</div>
+      <div class="pname">Mindwake Impact</div>
+      <p class="pdesc">Full-stack training &amp; capability management platform. Real-time admin dashboard for sessions, trainers, and reporting. Supports 100+ participants per session with structured tracking and smooth operational flow. End-to-end delivered.</p>
+      <div class="techs">
+        <span class="tech">Next.js</span><span class="tech">TypeScript</span><span class="tech">Node.js</span>
+        <span class="tech">PostgreSQL</span><span class="tech">AWS EC2</span><span class="tech">Elastic Beanstalk</span><span class="tech">RDS</span>
+      </div>
+      <a href="https://www.mindwakeimpact.com" target="_blank" class="plink">mindwakeimpact.com →</a>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="sec" id="skills">
+  <div class="sec-label reveal">Technical Skills</div>
+  <h2 class="sec-title reveal">What I Work With</h2>
+  <div class="sk-grid">
+    <div class="skc reveal"><div class="sk-title">📱 Mobile Dev</div><div class="sk-list"><span class="sk">Flutter</span><span class="sk">Dart</span><span class="sk">Android Studio</span><span class="sk">Xcode</span><span class="sk">CocoaPods</span><span class="sk">Kotlin</span><span class="sk">MVVM</span><span class="sk">Retrofit</span></div></div>
+    <div class="skc reveal" style="transition-delay:.08s"><div class="sk-title">⚙️ Backend</div><div class="sk-list"><span class="sk">Node.js</span><span class="sk">Express.js</span><span class="sk">TypeScript</span><span class="sk">REST APIs</span><span class="sk">JWT Auth</span><span class="sk">Firebase Auth</span><span class="sk">OTP Login</span></div></div>
+    <div class="skc reveal" style="transition-delay:.16s"><div class="sk-title">🗄️ Databases</div><div class="sk-list"><span class="sk">PostgreSQL</span><span class="sk">Firebase</span><span class="sk">MySQL</span><span class="sk">MongoDB</span><span class="sk">Prisma ORM</span><span class="sk">TypeORM</span></div></div>
+    <div class="skc reveal" style="transition-delay:.24s"><div class="sk-title">☁️ Cloud</div><div class="sk-list"><span class="sk">AWS EC2</span><span class="sk">Elastic Beanstalk</span><span class="sk">AWS RDS</span><span class="sk">Firebase</span><span class="sk">Git / GitHub</span><span class="sk">Play Store</span><span class="sk">App Store</span></div></div>
+    <div class="skc reveal" style="transition-delay:.32s"><div class="sk-title">🌐 Frontend</div><div class="sk-list"><span class="sk">React.js</span><span class="sk">Next.js</span><span class="sk">JavaScript</span><span class="sk">HTML + CSS</span><span class="sk">TypeScript</span></div></div>
+    <div class="skc reveal" style="transition-delay:.4s"><div class="sk-title">💻 Languages</div><div class="sk-list"><span class="sk">Dart</span><span class="sk">TypeScript</span><span class="sk">JavaScript</span><span class="sk">Java</span><span class="sk">Kotlin</span><span class="sk">C++</span><span class="sk">Python</span></div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-sec" id="contact">
+  <div class="sec-label reveal" style="justify-content:center">Contact</div>
+  <h2 class="contact-big reveal">Let's Build<br/><span>Something Great</span></h2>
+  <p class="contact-sub reveal">Open to freelance projects, internships, and collaborations. Let's talk.</p>
+  <div class="c-links reveal">
+    <a href="mailto:lokeshkanna968@gmail.com" class="c-link">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>lokeshkanna968@gmail.com
+    </a>
+    <a href="tel:+917904692663" class="c-link">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>+91 79046 92663
+    </a>
+    <a href="https://github.com" target="_blank" class="c-link">
+      <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>GitHub
+    </a>
+    <a href="https://linkedin.com" target="_blank" class="c-link">
+      <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2025 Ls.Lokesh · Pluto LLC</span>
+  <span>lokeshkanna968@gmail.com</span>
+</footer>
+
+<script>
+/* ---- LOADER ---- */
+const lbar=document.getElementById('lbar'),loader=document.getElementById('loader');
+let p=0;
+const iv=setInterval(()=>{
+  p+=Math.random()*15+3;
+  if(p>=100){p=100;clearInterval(iv);setTimeout(()=>{loader.classList.add('hide');boot();},400);}
+  lbar.style.width=p+'%';
+},60);
+
+/* ---- BOOT after load ---- */
+function boot(){
+  scramble(document.getElementById('sname'),'Ls.Lokesh',1500);
+  countUp('c1',3,1800);countUp('c2',2,1600);countUp('c3',6,2000);
+}
+
+/* ---- SCRAMBLE TEXT ---- */
+const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$@%&';
+function scramble(el,target,dur){
+  let t0=null,n=target.length;
+  function frame(ts){
+    if(!t0)t0=ts;
+    let ratio=Math.min((ts-t0)/dur,1),revealed=Math.floor(ratio*n),out='';
+    for(let i=0;i<n;i++) out+=i<revealed?target[i]:chars[Math.floor(Math.random()*chars.length)];
+    el.textContent=out;
+    if(ratio<1)requestAnimationFrame(frame);else el.textContent=target;
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---- COUNT UP ---- */
+function countUp(id,target,dur){
+  const el=document.getElementById(id);let t0=null;
+  function frame(ts){
+    if(!t0)t0=ts;
+    let ratio=Math.min((ts-t0)/dur,1);
+    el.textContent=Math.floor(ratio*target)+(ratio>=1?'+':'');
+    if(ratio<1)requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---- CURSOR ---- */
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function tick(){
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  rx+=(mx-rx)*.1;ry+=(my-ry)*.1;
+  curR.style.left=rx+'px';curR.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+document.querySelectorAll('a,button,.btn,.pcard,.wid-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='20px';cur.style.height='20px';cur.style.background='var(--accent2)';curR.style.width='60px';curR.style.height='60px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';cur.style.background='var(--accent)';curR.style.width='40px';curR.style.height='40px';});
+});
+
+/* ---- PARTICLES ---- */
+const cvs=document.getElementById('bg-canvas'),c=cvs.getContext('2d');
+let W,H;
+function rsz(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+class P{
+  constructor(){this.reset();this.y=Math.random()*H;}
+  reset(){this.x=Math.random()*W;this.y=H+5;this.vx=(Math.random()-.5)*.35;this.vy=-(Math.random()*.55+.15);this.r=Math.random()*1.4+.4;this.a=Math.random()*.35+.08;this.col=Math.random()>.5?'79,142,255':'0,229,192';}
+  step(){this.x+=this.vx;this.y+=this.vy;if(this.y<-5)this.reset();}
+  draw(){c.save();c.globalAlpha=this.a;c.fillStyle=`rgb(${this.col})`;c.beginPath();c.arc(this.x,this.y,this.r,0,Math.PI*2);c.fill();c.restore();}
+}
+const pts=Array.from({length:90},()=>new P());
+(function anim(){c.clearRect(0,0,W,H);pts.forEach(p=>{p.step();p.draw();});requestAnimationFrame(anim);})();
+
+/* ---- NAV SCROLL ---- */
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',scrollY>50);
+});
+
+/* ---- SCROLL REVEAL ---- */
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('on'),i*55);});
+},{threshold:0.1});
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(el=>io.observe(el));
+
+/* ---- 3D TILT on project cards ---- */
+document.querySelectorAll('.pcard').forEach(card=>{
+  let raf;
+  card.addEventListener('mousemove',e=>{
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`perspective(900px) rotateX(${-y*7}deg) rotateY(${x*7}deg) translateY(-7px)`;
+      const gfx=card.querySelector('.gfx');
+      if(gfx){gfx.style.left=(e.clientX-r.left)+'px';gfx.style.top=(e.clientY-r.top)+'px';}
+    });
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform='';
+    card.style.boxShadow='';
+  });
+});
+
+/* ---- MAGNETIC BUTTONS ---- */
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)*.22,y=(e.clientY-r.top-r.height/2)*.22;
+    btn.style.transform=`translate(${x}px,${y}px)`;
+  });
+  btn.addEventListener('mouseleave',()=>{btn.style.transform='';});
+});
+
+/* ---- ACTIVE NAV ---- */
+const sections=document.querySelectorAll('section[id]');
+const navLinks=document.querySelectorAll('.nav-links a');
+const ioNav=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+e.target.id)a.classList.add('active');});
+    }
+  });
+},{threshold:0.4});
+sections.forEach(s=>ioNav.observe(s));
+</script>
+</body>
+</html>
